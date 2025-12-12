@@ -13,10 +13,10 @@ on:
       - develop
 
 jobs:
-  build: # (python) install deps, basic import check
+  build: # (python) install deps, basic import check, python sanity
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Downlaod repo into runner
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -76,7 +76,7 @@ jobs:
           export PYTHONPATH="$(pwd)"
           python -m pytest -q
 
-  docker-build: # build container
+  docker-build: # build container, deployable output
     runs-on: ubuntu-latest
     needs: test
 

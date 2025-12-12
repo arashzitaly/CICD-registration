@@ -1,40 +1,57 @@
 name: CI
 
 on:
-    push:
-        branches:
-            - main
-            - develop
-            - "feature/**"
-            - "release/**"
-    pull_request:
-        branches:
-            - main
-            - develop
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "release/**"
+  pull_request:
+    branches:
+      - main
+      - develop
 
 jobs:
-    test-and-build:
-        runs-on: ubuntu-latest
+  test-and-build:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: registration_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d registration_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
-            - name: Set up Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.12"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Install deps
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install -r requirements.txt
-                  pip install pytest
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-            - name: Run tests
-              run: |
-                  export PYTHONPATH="$(pwd)"
-                  python -m pytest -q
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
 
-            - name: Build Docker image
-              run: docker build -t cicd-registration:${{ github.sha }} .
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/registration_db
+        run: |
+          export PYTHONPATH="$(pwd)"
+          python -m pytest -q
+
+      - name: Build Docker image
+        run: docker build -t cicd-registration:${{ github.sha }} .

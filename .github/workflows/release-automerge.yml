@@ -8,22 +8,24 @@ on:
 permissions:
     contents: write
     pull-requests: write
+    repository-projects: write
 
 jobs:
     enable-auto-merge:
         if: startsWith(github.head_ref, 'release/') && github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         steps:
-            - name: Enable auto-merge for release PR -> main
+            - name: Enable auto-merge
               uses: actions/github-script@v7
               with:
                   script: |
                       const pr = context.payload.pull_request;
-                      // Enable auto-merge (merge commit). You can switch to SQUASH or REBASE if you prefer.
                       await github.graphql(`
-                        mutation($prId: ID!) {
-                          enablePullRequestAutoMerge(input: {pullRequestId: $prId, mergeMethod: MERGE}) {
+                        mutation($id: ID!) {
+                          enablePullRequestAutoMerge(
+                            input: { pullRequestId: $id, mergeMethod: MERGE }
+                          ) {
                             pullRequest { number }
                           }
                         }
-                      `, { prId: pr.node_id });
+                      `, { id: pr.node_id });

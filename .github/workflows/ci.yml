@@ -1,4 +1,4 @@
-name: CI
+name: Continouos Integration
 
 on:
   push:
@@ -35,10 +35,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python with pip cache
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
 
       - name: Install deps
         run: |
@@ -61,5 +64,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t cicd-registration:${{ github.sha }} .
+      - name: Build Docker image (with cache)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: cicd-registration:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

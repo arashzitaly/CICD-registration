@@ -33,8 +33,8 @@ jobs:
 
             - name: Run tests
               run: |
-                  export PYHONPATH="${GITHUB_WORKSPACE}"
-                  pytest -q
+                  export PYTHONPATH="$(pwd)"
+                  python -m pytest -q
 
             - name: Build Docker image
               run: docker build -t cicd-registration:${{ github.sha }} .

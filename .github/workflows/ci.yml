@@ -32,7 +32,9 @@ jobs:
                   pip install pytest
 
             - name: Run tests
-              run: pytest -q
+              run: |
+                  export PYHONPATH="${GITHUB_WORKSPACE}"
+                  pytest -q
 
             - name: Build Docker image
               run: docker build -t cicd-registration:${{ github.sha }} .

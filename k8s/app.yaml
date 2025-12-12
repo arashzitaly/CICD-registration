@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registration-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registration-api
+  template:
+    metadata:
+      labels:
+        app: registration-api
+    spec:
+      containers:
+        - name: api
+          image: cicd-registration:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: postgresql://postgres:postgres@postgres:5432/registration_db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registration-api
+spec:
+  selector:
+    app: registration-api
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: NodePort
